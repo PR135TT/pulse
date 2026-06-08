@@ -70,7 +70,7 @@ export default function Leaderboard() {
                         No applicants yet.
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 pb-12">
                         {applicants.map((applicant, index) => (
                             <div
                                 key={applicant.id}
