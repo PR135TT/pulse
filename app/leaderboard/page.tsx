@@ -9,6 +9,7 @@ type Applicant = {
     position: string
     department: string
     score: number
+    hide_score: boolean
 }
 
 export default function Leaderboard() {
@@ -19,7 +20,7 @@ export default function Leaderboard() {
         async function fetchLeaderboard() {
             const { data, error } = await supabase
                 .from("applicants")
-                .select("id, full_name, position, department, score")
+                .select("id, full_name, position, department, score, hide_score")
                 .order("score", { ascending: false })
 
             if (error) {
@@ -88,7 +89,9 @@ export default function Leaderboard() {
                                 </div>
 
                                 <div className="text-right shrink-0">
-                                    <p className="text-xl font-bold">{applicant.score}</p>
+                                    <p className="text-xl font-bold">
+                                        {applicant.hide_score ? "•••" : applicant.score}
+                                    </p>
                                     <p className="text-xs text-zinc-400">passes</p>
                                 </div>
                             </div>

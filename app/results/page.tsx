@@ -7,6 +7,7 @@ type Applicant = {
     id: string
     full_name: string
     score: number
+    hide_score: boolean
 }
 
 export default function Results() {
@@ -121,7 +122,7 @@ export default function Results() {
 
         const { data, error } = await supabase
             .from("applicants")
-            .select("id, full_name, score")
+            .select("id, full_name, score, hide_score")
             .order("score", { ascending: false })
 
         if (error) {
@@ -153,6 +154,20 @@ export default function Results() {
         }
 
         setUpdating(null)
+    }
+
+    async function toggleHideScore(id: string, current: boolean) {
+        const {error} = await supabase
+            .from("applicants")
+            .update({ hide_score: !current })
+            .eq("id", id)
+
+            if (error) {
+                console.error(error)
+                alert("Failed to update visibility.")
+            } else {
+                setApplicants(prev => prev.map(a => a.id === id? {...a, hide_score: !current} : a))
+            }
     }
 
     const inputClass = "border border-zinc-300 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 w-full"
@@ -328,6 +343,17 @@ export default function Results() {
                                         className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-lg font-bold hover:opacity-80 disabled:opacity-30 transition flex items-center justify-center shrink-0"
                                     >
                                         +
+                                    </button>
+
+                                    <button
+                                        onClick={() => toggleHideScore(applicant.id, applicant.hide_score)}
+                                        className={`mt-3 w-full py-2 rounded-xl text-xs font-semibold border transition ${
+                                            applicant.hide_score
+                                                ? "border-zinc-300 dark:border-zinc-700 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                : "border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                        }`}
+                                    >
+                                        {applicant.hide_score ? "Score hidden — tap to show" : "Tap to hide score"}
                                     </button>
                                 </div>
 
