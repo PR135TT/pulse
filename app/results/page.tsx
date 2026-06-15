@@ -8,6 +8,7 @@ type Applicant = {
     full_name: string
     score: number
     hide_score: boolean
+    last_score: number
 }
 
 export default function Results() {
@@ -122,7 +123,7 @@ export default function Results() {
 
         const { data, error } = await supabase
             .from("applicants")
-            .select("id, full_name, score, hide_score")
+            .select("id, full_name, score, hide_score, last_score")
             .order("score", { ascending: false })
 
         if (error) {
@@ -168,6 +169,33 @@ export default function Results() {
             } else {
                 setApplicants(prev => prev.map(a => a.id === id? {...a, hide_score: !current} : a))
             }
+    }
+
+    async function resetScores() {
+        const confirm = window.confirm(
+            "Reseting score cannot be undone. Reset?"
+        )
+
+        if (!confirm) return
+
+        const update = applicants.map(a => 
+            supabase
+            .from("applicants")
+            .update({last_score: a.score, score: 0})
+            .eq("id", a.id)
+        )
+
+        const results = await Promise.all(update)
+        const hasError = results.some(r => r.error)
+
+        if (hasError) {
+            alert("Something went wrong during reset.")
+            return
+        }
+
+        setApplicants(prev => 
+            prev.map(a => ({...a, last_score: a.score, score: 0}))
+        )
     }
 
     const inputClass = "border border-zinc-300 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 w-full"
@@ -294,6 +322,13 @@ export default function Results() {
                 <div className="text-center mb-8">
                     <h1 className="text-2xl font-bold">Results</h1>
                     <p className="text-zinc-500 text-sm mt-1">Update weekly scores</p>
+
+                    <button
+                        onClick={resetScores}
+                        className="mt-4 px-5 py-2 rounded-xl border border-red-300 dark:border-red-800 text-red-500 dark:text-red-400 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                    >
+                        Reset all scores to zero
+                    </button>
                 </div>
 
                 {applicants.length === 0 ? (
@@ -344,18 +379,18 @@ export default function Results() {
                                     >
                                         +
                                     </button>
+                                </div>
 
-                                    <button
+                                <button
                                         onClick={() => toggleHideScore(applicant.id, applicant.hide_score)}
                                         className={`mt-3 w-full py-2 rounded-xl text-xs font-semibold border transition ${
                                             applicant.hide_score
-                                                ? "border-zinc-300 dark:border-zinc-700 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                                                : "border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                ? "border-zinc-300 dark:border-red-500 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                : "border-zinc-300 dark:border-green-500 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                                         }`}
                                     >
-                                        {applicant.hide_score ? "Score hidden — tap to show" : "Tap to hide score"}
-                                    </button>
-                                </div>
+                                        {applicant.hide_score ? "Passes hidden — tap to show" : "Tap to hide Passes"}
+                                </button>
 
                                 {updating === applicant.id && (
                                     <p className="text-xs text-zinc-400 mt-2 text-right">Saving...</p>
