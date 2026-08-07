@@ -198,6 +198,27 @@ export default function Results() {
         )
     }
 
+    async function deleteApplicant(id: string, name: string) {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete ${name}?`
+        )
+
+        if (!confirmed) return
+        
+        const {error} = await supabase
+        .from("applicants")
+        .delete()
+        .eq("id", id)
+
+        if (error) {
+            console.error(error)
+            alert(`Failed to delete ${name}.`)
+            return
+        }
+
+        setApplicants(prev => prev.filter(a => a.id !== id))
+    }
+
     const inputClass = "border border-zinc-300 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 w-full"
     const btnClass = "w-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-semibold py-2.5 rounded-xl text-sm hover:opacity-90 transition disabled:opacity-40"
 
@@ -390,6 +411,13 @@ export default function Results() {
                                         }`}
                                     >
                                         {applicant.hide_score ? "Passes hidden — tap to show" : "Tap to hide Passes"}
+                                </button>
+
+                                <button
+                                    onClick={() => deleteApplicant(applicant.id, applicant.full_name)}
+                                    className="mt-2 w-full py-2 rounded-xl border border-red-200 dark:border-red-900 text-red-400 dark:text-red-500 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                                >
+                                    Remove from Pulse Play
                                 </button>
 
                                 {updating === applicant.id && (
